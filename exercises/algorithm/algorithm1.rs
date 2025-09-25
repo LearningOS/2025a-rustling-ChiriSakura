@@ -2,7 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -22,6 +22,8 @@ impl<T> Node<T> {
         }
     }
 }
+// define the node and implement
+
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
@@ -70,13 +72,88 @@ impl<T> LinkedList<T> {
         }
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
+	where
+        T: PartialOrd,
+    
+    {
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut new_list = LinkedList::new();
+        new_list.length = list_a.length + list_b.length;
+
+        let mut a_current = list_a.start;
+        let mut b_current = list_b.start;
+        let mut new_current: Option<NonNull<Node<T>>> = None;
+
+        while let(Some(a_node), Some(b_node)) = (a_current, b_current) {
+            let a_val = unsafe{ &(*a_node.as_ptr()).val};
+            let b_val = unsafe{ &(*b_node.as_ptr()).val};
+
+            if a_val <= b_val {
+                let next_a = unsafe {(*a_node.as_ptr()).next};
+                unsafe {(*a_node.as_ptr()).next = None};
+
+                if let Some(curr) = new_current {
+                    unsafe {(*curr.as_ptr()).next = Some(a_node)};
+                }
+                else {
+                    new_list.start = Some(a_node);
+                }
+
+                new_current = Some(a_node);
+                new_list.end = Some(a_node);
+                a_current= next_a;
+            }
+            else {
+                let next_b = unsafe { (*b_node.as_ptr()).next};
+                unsafe { (*b_node.as_ptr()).next = None};
+
+                if let Some(curr) = new_current {
+                    unsafe {(*curr.as_ptr()).next = Some(b_node)};
+                }
+                else {
+                    new_list.start = Some(b_node);
+                }
+
+                new_current = Some(b_node);
+                new_list.end = Some(b_node);
+                b_current = next_b;
+            }
+
         }
+        while let Some(a_node) = a_current {
+            let next_a = unsafe {(*a_node.as_ptr()).next};
+            unsafe {(*a_node.as_ptr()).next = None};
+
+            if let Some(curr) = new_current {
+                unsafe { (*curr.as_ptr()).next = Some(a_node)};
+            }
+            else {
+                new_list.start = Some(a_node);
+            }
+
+            new_current = Some(a_node);
+            new_list.end = Some(a_node);
+            a_current = next_a;
+        }
+
+        while let Some(b_node) = b_current {
+            let next_b = unsafe {(*b_node.as_ptr()).next};
+            unsafe {(*b_node.as_ptr()).next = None};
+
+            if let Some(curr) = new_current {
+                unsafe { (*curr.as_ptr()).next = Some(b_node)};
+            }
+            else {
+                new_list.start = Some(b_node);
+            }
+
+            new_current = Some(b_node);
+            new_list.end = Some(b_node);
+            b_current = next_b;
+        }
+
+        new_list
+	
 	}
 }
 
